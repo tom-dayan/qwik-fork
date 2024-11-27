@@ -237,4 +237,53 @@ describe.each([
       </Component>
     );
   });
+
+  it('should add and remove attribute', async () => {
+    const Cmp = component$(() => {
+      const hide = useSignal(false);
+      const required = useSignal(false);
+      return (
+        <>
+          <button
+            onClick$={() => {
+              hide.value = !hide.value;
+            }}
+          ></button>
+          {hide.value ? <input id="input" /> : <input id="input" required={required.value} />}
+        </>
+      );
+    });
+
+    const { vNode, document } = await render(<Cmp />, { debug });
+    expect(vNode).toMatchVDOM(
+      <Component ssr-required>
+        <Fragment ssr-required>
+          <button></button>
+          <input id="input" required={false} />
+        </Fragment>
+      </Component>
+    );
+
+    await trigger(document.body, 'button', 'click');
+
+    expect(vNode).toMatchVDOM(
+      <Component ssr-required>
+        <Fragment ssr-required>
+          <button></button>
+          <input id="input" />
+        </Fragment>
+      </Component>
+    );
+
+    await trigger(document.body, 'button', 'click');
+
+    expect(vNode).toMatchVDOM(
+      <Component ssr-required>
+        <Fragment ssr-required>
+          <button></button>
+          <input id="input" required={false} />
+        </Fragment>
+      </Component>
+    );
+  });
 });
