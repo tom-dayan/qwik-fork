@@ -1114,10 +1114,18 @@ function serialize(serializationContext: SerializationContext): void {
         (value.$invalid$ || fastSkipSerialize(value.$untrackedValue$))
           ? NEEDS_COMPUTATION
           : value.$untrackedValue$;
+
       if ($isSsrNode$(v)) {
         // TODO maybe we don't need to store all vnode data if it's only a ref
         serializationContext.$addRoot$(v);
         v = new DomVRef(v.id);
+      } else if (Array.isArray(v)) {
+        for (let i = 0; i < v.length; i++) {
+          if ($isSsrNode$(v[i])) {
+            serializationContext.$addRoot$(v[i]);
+            v[i] = new DomVRef(v[i].id);
+          }
+        }
       }
       if (value instanceof WrappedSignal) {
         output(TypeIds.WrappedSignal, [
